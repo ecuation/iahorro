@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\API;
 
 use App\Models\Client;
 use App\Models\Lead;
@@ -73,6 +73,9 @@ class LeadControllerAPITest extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * it tests a 404 for a non existing Lead
+     */
     public function test_show_for_no_existing_lead(): void
     {
         $response = $this->json('get', route('leads.show', 150));

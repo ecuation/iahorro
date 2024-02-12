@@ -1,66 +1,74 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Overview
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Prueba técnica de un CRUD API REST que consta de un controlador para Leads. 
 
-## About Laravel
+### Requerimientos
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Php ^8.1**
+- **Composer**
+- **Docker**
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Instalación
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **1) Clonar proyecto en entorno local**
+- **2) Copiar fichero .env.example como .env**
+- **3) Instalar dependencias con comando:** ```composer install```
+- **4) Levantar contenedores Docker del proyecto con comando:** ```./vendor/bin/sail up```
 
-## Learning Laravel
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Tests de LeadController
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Para correr los tests simplemente lo haremos a través del comando```./vendor/bin/sail artisan test```.
+Este comando ejecutará los test que se encuentran en el fichero```tests/API/LeadControllerAPITest```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-## Laravel Sponsors
+## LeadController
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Este es el controlador que se ha refactorizado se han añadido 2 nuevos servicios para separar responsabilidades en el mismo.
 
-### Premium Partners
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## LeadService
 
-## Contributing
+Este servicio consta de 2 métodos ```createLeadFromClient```  y ```updateLead```. Estos métodos se encargan a su vez llamar a otro servicio
+externo el ```LeadScoringService```, simplemente he separado responsabilidades ya que dichos métodos reciben una data correspondiente a un Lead
+y también requieren de un cálculo de un score que se realiza por medio del servicio LeadScoringService, de esta forma tenemos métodos más limpios en el controlador
+y además separamos responsabilidades facilitando la mantenibilidad y la escalabilidad del proyecto a futuro.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## ClientService
 
-## Code of Conduct
+En este servicio he creado un método ```storeOrUpdateClientIfExists``` el cual se encarga de comprobar por medio del campo email si el cliente existe
+y en caso afirmativo simplemente actualizaremos el modelo con los datos enviados. En caso contrario, si el cliente no existe, lo que hará es crear un nuevo cliente
+y devolver el modelo en cuestión.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Manejo de Errores en LeadController@store (Error handling)
 
-## Security Vulnerabilities
+Primero hemos separado la validación del request en un ````StoreLeadRequest```` , el cual tiene las reglas de validación requeridas para las peticiones que se envíen a dicho endpoint, de esta 
+manera también tendremos un método store mucho más limpio y con la responsabilidad de validación separada en un LaravelRequest (StoreLeadRequest).
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Este método (store) no solo se encarga de crear un nuevo Lead, si no que además debemos comprobar sin un cliente existe y crear o actualizar según el caso. 
+Para ello he usado un try/catch con un DB transaction el cual se encarga de ejecutar las queries SQL y en caso de que alguna de ellas falle hacemos un rollback de la transacción lanzando un HTTPException.
 
-## License
+Para la respuesta en caso exitoso, también hemos usado un Laravel API Resource el cual ayuda a tener un código más limpio y reutilizable a la hora de enviar respuestas JSON de dicho recurso,
+este resource es el ```LeadResource```.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Manejo de HTTPResponses en los métodos show, update y destroy
+
+Para normalizar las respuestas básicas HTTP he creado un fichero helper ```HTTPResponseHelper``` con un método ```notFoundResponse```, esta clase no solo puede tener 
+un método para dichos casos, en caso de necesitar extender a otras respuetas simplemente se puede ir añadiendo los métodos correspondientes para así tenerlo todo centralizado 
+en una sola clase y mantener uniformidad en las respuestas JSON HTTP.
+
+
+## Tests
+
+En el ````LeadControllerAPITest```` no solo se están comprobando los endpoints CRUD para los casos básicos,
+también he añadido pruebas para casos más especificos como el test ````test_store_lead_from_existing_client````. En este test
+se comprueba que efectivamente si existe un cliente con dicho email este sea actualizado, además de retornar su status correcto.
+
+
+
+
+
+
+
+
+
