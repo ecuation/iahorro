@@ -35,10 +35,10 @@ class LeadControllerAPITest extends TestCase
         $clientNewPhoneNumber = $this->faker->phoneNumber;
         $lead = Lead::factory()->make([
             'client_id' => $client->id,
-            'email' => $client->email,
             'phone' => $clientNewPhoneNumber
         ])->attributesToArray();
         $lead['name'] = $client->name;
+        $lead['email'] = $this->faker->email;
         $response = $this->json('post', route('leads.store'), $lead);
         $this->assertEquals($response->decodeResponseJson()['data']['client']['phone'], $clientNewPhoneNumber);
 
