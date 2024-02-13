@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\MortgagePurposes;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -26,7 +27,7 @@ class UpdateLeadRequest extends FormRequest
             'mortgage_request_amount' => 'required|integer',
             'purpose_mortgage' => [
                 'required',
-                Rule::in(['primera-vivienda', 'segunda-vivienda']),
+                Rule::in(MortgagePurposes::options()),
             ],
         ];
     }

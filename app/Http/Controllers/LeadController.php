@@ -28,7 +28,7 @@ class LeadController extends Controller
         DB::beginTransaction();
         try {
             $clientData = $request->only(['name', 'email', 'phone']);
-            $leadData = $request->except(['name', 'phone']);
+            $leadData = $request->except(['name', 'phone', 'email']);
             $client = $this->clientService->storeOrUpdateClientIfExists($clientData);
             $lead = $this->leadService->createLeadFromClient($client, $leadData);
             DB::commit();

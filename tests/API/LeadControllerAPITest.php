@@ -20,6 +20,7 @@ class LeadControllerAPITest extends TestCase
         $lead = Lead::factory()->make()->attributesToArray();
         $lead['name'] = $this->faker->firstName();
         $lead['phone'] = $this->faker->phoneNumber;
+        $lead['email'] = $this->faker->email;
 
         $response = $this->json('post', route('leads.store'), $lead);
         $response->assertStatus(201);
@@ -68,7 +69,7 @@ class LeadControllerAPITest extends TestCase
         $lead = Lead::factory()->create(['client_id' => $client->id])->attributesToArray();
         $response = $this->json('get', route('leads.show', $lead['id']));
         $responseData = $response->decodeResponseJson()['data'];
-        $this->assertEquals($lead['email'], $responseData['email']);
+        $this->assertEquals($lead['client_id'], $responseData['client']['id']);
 
         $response->assertStatus(200);
     }

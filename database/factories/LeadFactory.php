@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\MortgagePurposes;
 use Illuminate\Database\Eloquent\Factories\Factory;
+
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Lead>
@@ -17,11 +19,8 @@ class LeadFactory extends Factory
     public function definition(): array
     {
         return [
-            'email' => $this->faker->email,
             'mortgage_request_amount' => $this->faker->randomNumber(),
-            'purpose_mortgage' => $this->faker->randomElement([
-                'primera-vivienda', 'segunda-vivienda'
-            ]),
+            'purpose_mortgage' => $this->faker->randomElement(MortgagePurposes::options()),
             'score' => rand(0, 100)
         ];
     }

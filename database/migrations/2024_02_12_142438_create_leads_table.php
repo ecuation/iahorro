@@ -14,10 +14,9 @@ return new class extends Migration
         Schema::create('leads', function (Blueprint $table) {
             $table->id();
             $table->foreignId('client_id')->constrained();
-            $table->string('email');
             $table->integer('mortgage_request_amount');
             $table->string('purpose_mortgage');
-            $table->integer('score')->nullable();
+            $table->integer('score');
             $table->timestamps();
         });
     }
